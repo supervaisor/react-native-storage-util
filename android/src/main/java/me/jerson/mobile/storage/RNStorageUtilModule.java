@@ -125,29 +125,25 @@ public class RNStorageUtilModule extends ReactContextBaseJavaModule {
     promise.resolve(data);
   }
 
+
   @ReactMethod
   public void getFreeSpace(String path, Promise promise) {
 
-    // new Thread(new Runnable() {
-    // public void run() {
     Long space = 0l;
     try {
-      StatFs stats = new StatFs(path);
-      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-        long availableBlocks = stats.getAvailableBlocks();
-        long blockSize = stats.getBlockSize();
-        space = availableBlocks * blockSize;
+      StatFs stat = new StatFs(path);
+      long bytesAvailable = 0;
+      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2)
+          bytesAvailable = (long) stat.getBlockSizeLong() * (long) stat.getAvailableBlocksLong();
+      else
+          bytesAvailable = (long) stat.getBlockSize() * (long) stat.getAvailableBlocks();
 
-      } else {
-        space = stats.getAvailableBytes();
-      }
+      space = bytesAvailable / (1024 * 1024);
     } catch (Exception e) {
       space = 0l;
     }
 
     promise.resolve(space.intValue());
-    // }
-    // }).start();
 
   }
 
